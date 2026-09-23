@@ -7,6 +7,7 @@ export interface OllamaGenerateOptions {
   contents: string;
   responseMimeType?: string;
   formatJson?: boolean;
+  images?: string[];
 }
 
 export interface OllamaModelDetails {
@@ -85,7 +86,7 @@ export class OllamaAiService {
     const isJson = options.formatJson || options.responseMimeType?.includes('json');
     const targetModel = options.model || this.modelName;
 
-    const payload = {
+    const payload: any = {
       model: targetModel,
       prompt: options.contents,
       system: options.systemInstruction || '',
@@ -93,9 +94,13 @@ export class OllamaAiService {
       format: isJson ? 'json' : undefined,
       options: {
         temperature: 0.1,
-        num_ctx: 16384,
+        num_ctx: 4096,
+        num_thread: 2,
       },
     };
+    if (options.images && options.images.length > 0) {
+      payload.images = options.images;
+    }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);

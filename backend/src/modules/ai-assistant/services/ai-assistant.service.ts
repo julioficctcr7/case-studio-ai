@@ -550,11 +550,28 @@ REGLA ESTRICTA DE ATRIBUTOS PARA LA TABLA ASOCIATIVA INTERMEDIA:
         },
       ];
 
-      const responseText = await this.vertexAiService.generateContent({
-        systemInstruction: visionSystemInstruction,
-        contents,
-        responseMimeType: 'application/json',
-      });
+      let responseText = '';
+      try {
+        responseText = await this.vertexAiService.generateContent({
+          systemInstruction: visionSystemInstruction,
+          contents,
+          responseMimeType: 'application/json',
+        });
+      } catch (vertexErr: any) {
+        this.logger.warn(`[Vision] Vertex AI fallo (${vertexErr?.message || vertexErr}). Intentando con Ollama Vision (moondream)...`);
+        const isOllamaAvail = await this.ollamaAiService.isAvailable();
+        if (isOllamaAvail) {
+          responseText = await this.ollamaAiService.generateContent({
+            model: 'moondream:latest',
+            contents: `Analiza esta imagen de pizarra con diagrama de clases UML. Detecta las clases, atributos, tipos y relaciones. Responde en formato JSON con nodes y connections: ${promptText}`,
+            systemInstruction: visionSystemInstruction,
+            images: [cleanBase64],
+            formatJson: true,
+          });
+        } else {
+          throw vertexErr;
+        }
+      }
 
       const parsed = this.cleanAndParseJson(responseText);
 
