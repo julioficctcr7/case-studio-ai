@@ -162,7 +162,7 @@ export class AiAssistantService {
   async getAvailableModels(): Promise<AvailableAiModelsResponse> {
     const isOllamaAvail = await this.ollamaAiService.isAvailable();
     const configuredProvider = (this.configService.get<string>('AI_PROVIDER') || 'vertex').toLowerCase() as 'ollama' | 'vertex';
-    const configuredGeminiModel = this.configService.get<string>('GEMINI_MODEL') || 'gemini-3-flash-preview';
+    const configuredGeminiModel = this.configService.get<string>('GEMINI_MODEL') || 'gemini-3.5-flash-lite';
     const configuredOllamaModel = this.ollamaAiService.getModelName();
 
     const models: AiModelOption[] = [];
@@ -559,19 +559,8 @@ REGLA ESTRICTA DE ATRIBUTOS PARA LA TABLA ASOCIATIVA INTERMEDIA:
           responseMimeType: 'application/json',
         });
       } catch (vertexErr: any) {
-        this.logger.warn(`[Vision] Vertex AI fallo (${vertexErr?.message || vertexErr}). Intentando con Ollama Vision (moondream)...`);
-        const isOllamaAvail = await this.ollamaAiService.isAvailable();
-        if (isOllamaAvail) {
-          responseText = await this.ollamaAiService.generateContent({
-            model: 'moondream:latest',
-            contents: `Analiza esta imagen de pizarra con diagrama de clases UML. Detecta las clases, atributos, tipos y relaciones. Responde en formato JSON con nodes y connections: ${promptText}`,
-            systemInstruction: visionSystemInstruction,
-            images: [cleanBase64],
-            formatJson: true,
-          });
-        } else {
-          throw vertexErr;
-        }
+        this.logger.error(`[Vision] Error en digitalización con Gemini: ${vertexErr?.message || vertexErr}`);
+        throw new Error(`No se pudo digitalizar la imagen con Gemini: ${vertexErr?.message || vertexErr}. Por favor intenta nuevamente.`);
       }
 
       const parsed = this.cleanAndParseJson(responseText);
