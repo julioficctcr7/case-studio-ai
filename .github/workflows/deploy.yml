@@ -50,14 +50,14 @@ jobs:
             set -e
             echo "🚀 [AWS EC2] Iniciando despliegue de CASE Studio AI..."
 
-            # Exportar variables de entorno de Node / Docker
             export PATH=$PATH:/usr/bin:/usr/local/bin:/usr/local/bin/docker-compose
 
-            # Navegar a la carpeta del proyecto o clonar si es primera vez
+            # Asegurar permisos sobre el socket de Docker
+            sudo chmod 666 /var/run/docker.sock || true
+
+            # Navegar a la carpeta del proyecto o clonar
             if [ -d "$HOME/case-studio-ai" ]; then
               cd "$HOME/case-studio-ai"
-            elif [ -d "$HOME/sw1_parcial1_backend" ]; then
-              cd "$HOME/sw1_parcial1_backend"
             else
               git clone https://github.com/julioficctcr7/case-studio-ai.git "$HOME/case-studio-ai"
               cd "$HOME/case-studio-ai"
@@ -69,8 +69,11 @@ jobs:
             # Desplegar servicios con Docker Compose en el servidor
             if [ -d "infra" ]; then
               cd infra
-              docker compose down || true
-              docker compose up -d --build
+              export DOMAIN_NAME="${{ secrets.DOMAIN_NAME }}"
+              [ -z "$DOMAIN_NAME" ] && export DOMAIN_NAME="casestudio.duckdns.org"
+
+              sudo -E docker compose down || true
+              sudo -E docker compose up -d --build
             fi
 
             echo "✅ [AWS EC2] Despliegue en producción completado con éxito!"

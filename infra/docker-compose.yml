@@ -34,7 +34,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-casestudio_secret_2026}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       JWT_SECRET: ${JWT_SECRET:-super_secret_case_studio_jwt_token_key_2026}
-      CORS_ORIGINS: ${CORS_ORIGINS:-https://${DOMAIN_NAME}}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://${DOMAIN_NAME:-casestudio.duckdns.org}}
       OLLAMA_BASE_URL: http://ollama:11434
     ports:
       - "127.0.0.1:8080:8080"
