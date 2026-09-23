@@ -130,6 +130,9 @@ export class SpringTemplateEngineService {
           toSnakeCase(rawName) === `${singularTable}_id`;
         const javaType = normalizeJavaType(attr.type || (isId ? 'UUID' : 'String'));
         const fieldName = toCamelCase(rawName);
+        if (fields.some((f) => f.name.toLowerCase() === fieldName.toLowerCase())) {
+          continue;
+        }
 
         if (isId) hasId = true;
 

@@ -138,6 +138,89 @@ flutter run
       content: masterReadme,
     });
 
+    combinedFiles.push(...flutterFiles);
+
+    // Script individual de inicio de Backend
+    combinedFiles.push({
+      path: 'backend/iniciar_backend.bat',
+      filename: 'iniciar_backend.bat',
+      language: 'bat',
+      layer: 'config',
+      content: `@echo off
+title Backend Spring Boot - CASE Studio AI
+echo =========================================================================
+echo   INICIANDO BACKEND SPRING BOOT + POSTGRESQL (1 CLIC) - CASE STUDIO AI
+echo =========================================================================
+echo.
+echo [1/2] Levantando contenedor Docker con PostgreSQL y Spring Boot...
+docker compose up -d
+echo Esperando 5 segundos a que los servicios esten listos...
+timeout /t 5 /nobreak > nul
+echo.
+echo [2/2] Abriendo Swagger UI en el navegador...
+start http://localhost:${context.serverPort || 8080}/swagger-ui.html
+echo.
+echo Backend activo en: http://localhost:${context.serverPort || 8080}
+echo Documentacion interactiva disponible en Swagger UI.
+pause
+`,
+    });
+
+    // Script individual de inicio de Flutter
+    combinedFiles.push({
+      path: 'mobile_flutter/iniciar_movil.bat',
+      filename: 'iniciar_movil.bat',
+      language: 'bat',
+      layer: 'config',
+      content: `@echo off
+title Frontend Movil Flutter - CASE Studio AI
+echo =========================================================================
+echo   INICIANDO APLICACION FLUTTER (1 CLIC) - CASE STUDIO AI
+echo =========================================================================
+echo.
+echo [1/2] Verificando paquetes y dependencias de Flutter...
+call flutter pub get
+echo.
+echo [2/2] Lanzando aplicacion en navegador Web (Chrome)...
+call flutter run -d chrome
+pause
+`,
+    });
+
+    // Script Maestro de Lanzamiento Autonomo de 1 Clic (DEFENSA RAPIDA)
+    const masterStartBat = `@echo off
+title CASE Studio AI - Solucion Fullstack
+echo =========================================================================
+echo   CASE STUDIO AI - LANZADOR FULLSTACK AUTONOMO DE 1 CLIC (DEFENSA RAPIDA)
+echo =========================================================================
+echo.
+echo [1/3] Iniciando Backend Spring Boot y Base de Datos en Docker...
+cd backend
+start /b docker compose up -d
+cd ..
+echo Esperando 6 segundos a que el contenedor de Spring Boot inicie...
+timeout /t 6 /nobreak > nul
+echo.
+echo [2/3] Abriendo Documentacion Swagger UI en el navegador...
+start http://localhost:${context.serverPort || 8080}/swagger-ui.html
+echo.
+echo [3/3] Iniciando Aplicacion Movil Flutter en Navegador Chrome...
+cd mobile_flutter
+call flutter pub get
+call flutter run -d chrome
+echo.
+echo Demostracion completada con exito.
+pause
+`;
+
+    combinedFiles.push({
+      path: 'INICIAR_TODO.bat',
+      filename: 'INICIAR_TODO.bat',
+      language: 'bat',
+      layer: 'config',
+      content: masterStartBat,
+    });
+
     return {
       projectName: context.projectName,
       files: combinedFiles,

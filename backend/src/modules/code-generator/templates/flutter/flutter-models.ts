@@ -54,7 +54,11 @@ export function getDartFields(meta: JavaClassMeta): DartField[] {
       ),
   );
 
-  const fields: DartField[] = nonDuplicateFields.map((f) => {
+  const uniqueFields = nonDuplicateFields.filter(
+    (f, idx, arr) => arr.findIndex((x) => x.name.toLowerCase() === f.name.toLowerCase()) === idx,
+  );
+
+  const fields: DartField[] = uniqueFields.map((f) => {
     const dartType = mapJavaTypeToDart(f.javaType);
     const isDateTime = dartType === 'DateTime';
     const isNumber = dartType === 'int' || dartType === 'double';
