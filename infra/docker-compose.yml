@@ -18,7 +18,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # --- CASE Engine (Spring Boot 3 / Java 21) ---
+  # --- CASE Engine (NestJS / TypeORM Backend) ---
   backend:
     image: ${DOCKER_REGISTRY:-casestudio}/case-backend:${IMAGE_TAG:-latest}
     build:
@@ -29,17 +29,26 @@ services:
       db:
         condition: service_healthy
     environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-casestudio_user}
+      DB_PASS: ${POSTGRES_PASSWORD:-casestudio_secret_2026}
+      DB_NAME: ${POSTGRES_DB:-casestudio}
+      DB_SYNCHRONIZE: "true"
+      JWT_SECRET: ${JWT_SECRET:-super_secret_case_studio_jwt_token_key_2026}
+      CORS_ORIGINS: "*"
+      OLLAMA_BASE_URL: http://ollama:11434
+      # Fallback Spring datasource properties
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-casestudio}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-casestudio_user}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-casestudio_secret_2026}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      JWT_SECRET: ${JWT_SECRET:-super_secret_case_studio_jwt_token_key_2026}
-      CORS_ORIGINS: ${CORS_ORIGINS:-https://${DOMAIN_NAME:-casestudio.duckdns.org}}
-      OLLAMA_BASE_URL: http://ollama:11434
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:3001:3000"
 
-  # --- Web CASE Studio Frontend ---
+  # --- Web CASE Studio Frontend (Angular + Nginx) ---
   web:
     image: ${DOCKER_REGISTRY:-casestudio}/case-web:${IMAGE_TAG:-latest}
     build:
