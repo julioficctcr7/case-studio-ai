@@ -9,8 +9,8 @@ export function getAllowedCorsOrigins(): string[] {
     .filter(Boolean);
 
   const defaultOrigins = [
-    'https://evertrodriguez.dev',
-    'https://www.evertrodriguez.dev',
+    'https://casestudio.duckdns.org',
+    'https://julioficctcr7.github.io',
     'http://localhost:4200',
     'http://127.0.0.1:4200',
   ];

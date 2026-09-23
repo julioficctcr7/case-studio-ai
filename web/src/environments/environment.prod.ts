@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  // Configuración de conexión con el backend en Modo Producción (PROD)
-  apiUrl: 'https://api.evertrodriguez.dev/api',
-  socketUrl: 'https://api.evertrodriguez.dev/collaboration',
+  // Conexión relativa transparente con Nginx Reverse Proxy en AWS EC2
+  apiUrl: '/api',
+  socketUrl: '/collaboration',
 };
