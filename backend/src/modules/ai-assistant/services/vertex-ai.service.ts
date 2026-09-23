@@ -12,8 +12,8 @@ export class VertexAiService {
   constructor(private readonly configService: ConfigService) {
     const project = this.configService.get<string>('GCP_PROJECT_ID') || 'psyched-list-507014-d7';
     const location = this.configService.get<string>('GCP_LOCATION') || 'us-central1';
-    const configuredModel = this.configService.get<string>('GEMINI_MODEL') || 'gemini-3.6-flash';
-    this.modelName = (configuredModel === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : configuredModel;
+    const configuredModel = this.configService.get<string>('GEMINI_MODEL') || 'gemini-3-flash-preview';
+    this.modelName = (configuredModel === 'gemini-2.5-flash') ? 'gemini-3-flash-preview' : configuredModel;
     this.apiKey = this.configService.get<string>('GEMINI_API_KEY');
 
     this.initClient(project, location);
@@ -26,7 +26,7 @@ export class VertexAiService {
           apiKey: this.apiKey,
         });
         this.logger.log(
-          `[VertexAI/Gemini] Inicializado con API Key directa de Google GenAI, modelo: ${this.modelName}`,
+          `[VertexAI/Gemini] Inicializado con API Key directa de Google GenAI, modelo principal: ${this.modelName}`,
         );
       } else {
         this.ai = new GoogleGenAI({
@@ -48,30 +48,44 @@ export class VertexAiService {
     contents: any;
     responseMimeType?: string;
   }): Promise<string> {
-    try {
-      const config: any = {};
-      if (options.systemInstruction) {
-        config.systemInstruction = options.systemInstruction;
-      }
-      if (options.responseMimeType) {
-        config.responseMimeType = options.responseMimeType;
-      }
-
-      const response = await this.ai.models.generateContent({
-        model: this.modelName,
-        contents: options.contents,
-        config: Object.keys(config).length > 0 ? config : undefined,
-      });
-
-      return response.text || '';
-    } catch (error: any) {
-      this.logger.error(`[VertexAI] Error ejecutando generateContent: ${error.message || error}`);
-      if (error?.message?.includes('invalid_grant') || error?.message?.includes('invalid_rapt')) {
-        this.logger.warn(
-          '⚠️ Las credenciales ADC de Google Cloud han expirado. Ejecuta en tu terminal: `gcloud auth application-default login` o define `GEMINI_API_KEY` en tu archivo backend/.env',
-        );
-      }
-      throw error;
+    const config: any = {};
+    if (options.systemInstruction) {
+      config.systemInstruction = options.systemInstruction;
     }
+    if (options.responseMimeType) {
+      config.responseMimeType = options.responseMimeType;
+    }
+
+    const candidateModels = [
+      this.modelName,
+      'gemini-3-flash-preview',
+      'gemini-3.6-flash',
+    ];
+    const modelsToTry = Array.from(new Set(candidateModels));
+
+    let lastError: any = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      for (const model of modelsToTry) {
+        try {
+          const response = await this.ai.models.generateContent({
+            model,
+            contents: options.contents,
+            config: Object.keys(config).length > 0 ? config : undefined,
+          });
+          if (response && response.text) {
+            return response.text;
+          }
+        } catch (error: any) {
+          lastError = error;
+          this.logger.warn(`[Gemini] Error con ${model} en intento ${attempt}: ${error?.message || error}. Probando siguiente modelo...`);
+        }
+      }
+      if (attempt < 2) {
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+    }
+
+    this.logger.error(`[Gemini] Todos los modelos fallaron: ${lastError?.message || lastError}`);
+    throw lastError;
   }
 }
