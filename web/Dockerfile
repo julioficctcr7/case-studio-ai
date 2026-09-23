@@ -15,7 +15,7 @@ RUN npm run build --configuration=production
 
 FROM nginx:alpine AS runner
 
-COPY --from=builder /app/dist/web/browser /usr/share/nginx/html
+COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
 
 RUN echo 'server { \
     listen 80; \
