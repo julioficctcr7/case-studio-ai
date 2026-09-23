@@ -57,7 +57,7 @@ export class VertexAiService {
     }
 
     const candidateModels = [
-      this.modelName,
+      this.modelName || 'gemini-3-flash-preview',
       'gemini-3-flash-preview',
       'gemini-3.6-flash',
     ];

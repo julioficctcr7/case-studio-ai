@@ -161,10 +161,21 @@ export class AiAssistantService {
    */
   async getAvailableModels(): Promise<AvailableAiModelsResponse> {
     const isOllamaAvail = await this.ollamaAiService.isAvailable();
-    const configuredProvider = (this.configService.get<string>('AI_PROVIDER') || 'ollama').toLowerCase() as 'ollama' | 'vertex';
+    const configuredProvider = (this.configService.get<string>('AI_PROVIDER') || 'vertex').toLowerCase() as 'ollama' | 'vertex';
+    const configuredGeminiModel = this.configService.get<string>('GEMINI_MODEL') || 'gemini-3-flash-preview';
     const configuredOllamaModel = this.ollamaAiService.getModelName();
 
     const models: AiModelOption[] = [];
+
+    // Siempre disponible como opción recomendada y por defecto: Google Cloud Gemini (Vision, Cámara, Pizarra, Texto)
+    models.push({
+      id: configuredGeminiModel,
+      name: `Google Gemini (${configuredGeminiModel})`,
+      provider: 'vertex',
+      isLocal: false,
+      parameterSize: 'Cloud Multimodal',
+      description: 'Google AI Cloud Oficial (Ultra rápido, soporte completo Visión, Cámara, Pizarra y Texto)',
+    });
 
     if (isOllamaAvail) {
       const ollamaModels = await this.ollamaAiService.listDetailedModels();
@@ -200,23 +211,13 @@ export class AiAssistantService {
       }
     }
 
-    // Siempre disponible: Google Cloud Vertex AI (Gemini 2.5 Flash)
-    models.push({
-      id: 'gemini-2.5-flash',
-      name: 'Google Gemini 2.5 Flash',
-      provider: 'vertex',
-      isLocal: false,
-      parameterSize: 'Cloud',
-      description: 'Google Vertex AI (Nube, Multimodal & Visión)',
-    });
-
-    let defaultModel = 'gemini-3.6-flash';
+    let defaultModel = configuredGeminiModel;
     let defaultProvider: 'ollama' | 'vertex' = 'vertex';
 
-    if (isOllamaAvail && models.some((m) => m.provider === 'ollama')) {
+    if (configuredProvider === 'ollama' && isOllamaAvail && models.some((m) => m.provider === 'ollama')) {
       const matchConfigured = models.find((m) => m.id === configuredOllamaModel);
       defaultModel = matchConfigured ? matchConfigured.id : models.find((m) => m.provider === 'ollama')!.id;
-      defaultProvider = configuredProvider === 'vertex' ? 'vertex' : 'ollama';
+      defaultProvider = 'ollama';
     }
 
     return {
@@ -239,7 +240,7 @@ export class AiAssistantService {
     provider?: 'ollama' | 'vertex';
     model?: string;
   }): Promise<{ responseText: string; providerUsed: 'ollama' | 'vertex'; modelUsed: string }> {
-    const defaultProvider = (this.configService.get<string>('AI_PROVIDER') || 'ollama').toLowerCase() as 'ollama' | 'vertex';
+    const defaultProvider = (this.configService.get<string>('AI_PROVIDER') || 'vertex').toLowerCase() as 'ollama' | 'vertex';
     const requestedProvider = options.provider || defaultProvider;
 
     if (requestedProvider === 'ollama') {
@@ -278,7 +279,7 @@ export class AiAssistantService {
     return {
       responseText: text,
       providerUsed: 'vertex',
-      modelUsed: 'gemini-3.6-flash',
+      modelUsed: this.configService.get<string>('GEMINI_MODEL') || 'gemini-3-flash-preview',
     };
   }
 
@@ -613,7 +614,7 @@ REGLA ESTRICTA DE ATRIBUTOS PARA LA TABLA ASOCIATIVA INTERMEDIA:
         connections: updatedConnections,
         changesSummary: `Digitalización visual completada: ${updatedNodes.length} clases y ${updatedConnections.length} relaciones extraídas.`,
         providerUsed: 'vertex',
-        modelUsed: 'gemini-3.6-flash',
+        modelUsed: this.configService.get<string>('GEMINI_MODEL') || 'gemini-3-flash-preview',
       };
     } catch (err: any) {
       this.logger.error(`Error procesando visión de diagrama IA: ${err.message || err}`);
@@ -625,7 +626,7 @@ REGLA ESTRICTA DE ATRIBUTOS PARA LA TABLA ASOCIATIVA INTERMEDIA:
         connections: currentConnections,
         changesSummary: 'Fallo al procesar imagen con Gemini Vision.',
         providerUsed: 'vertex',
-        modelUsed: 'gemini-3.6-flash',
+        modelUsed: this.configService.get<string>('GEMINI_MODEL') || 'gemini-3-flash-preview',
       };
     }
   }
