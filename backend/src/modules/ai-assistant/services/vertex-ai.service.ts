@@ -12,7 +12,8 @@ export class VertexAiService {
   constructor(private readonly configService: ConfigService) {
     const project = this.configService.get<string>('GCP_PROJECT_ID') || 'psyched-list-507014-d7';
     const location = this.configService.get<string>('GCP_LOCATION') || 'us-central1';
-    this.modelName = this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.5-flash';
+    const configuredModel = this.configService.get<string>('GEMINI_MODEL') || 'gemini-3.6-flash';
+    this.modelName = (configuredModel === 'gemini-2.5-flash') ? 'gemini-3.6-flash' : configuredModel;
     this.apiKey = this.configService.get<string>('GEMINI_API_KEY');
 
     this.initClient(project, location);
@@ -21,13 +22,11 @@ export class VertexAiService {
   private initClient(project: string, location: string): void {
     try {
       if (this.apiKey) {
-        const isVertexKey = this.apiKey.startsWith('AQ.');
         this.ai = new GoogleGenAI({
           apiKey: this.apiKey,
-          ...(isVertexKey ? { vertexai: true, location } : {}),
         });
         this.logger.log(
-          `[VertexAI/Gemini] Inicializado con API Key (${isVertexKey ? 'Google Cloud Vertex AI' : 'Google AI Studio'}), modelo: ${this.modelName}`,
+          `[VertexAI/Gemini] Inicializado con API Key directa de Google GenAI, modelo: ${this.modelName}`,
         );
       } else {
         this.ai = new GoogleGenAI({

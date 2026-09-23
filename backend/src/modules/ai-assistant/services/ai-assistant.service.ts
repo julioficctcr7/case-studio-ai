@@ -210,7 +210,7 @@ export class AiAssistantService {
       description: 'Google Vertex AI (Nube, Multimodal & Visión)',
     });
 
-    let defaultModel = 'gemini-2.5-flash';
+    let defaultModel = 'gemini-3.6-flash';
     let defaultProvider: 'ollama' | 'vertex' = 'vertex';
 
     if (isOllamaAvail && models.some((m) => m.provider === 'ollama')) {
@@ -278,7 +278,7 @@ export class AiAssistantService {
     return {
       responseText: text,
       providerUsed: 'vertex',
-      modelUsed: 'gemini-2.5-flash',
+      modelUsed: 'gemini-3.6-flash',
     };
   }
 
@@ -613,7 +613,7 @@ REGLA ESTRICTA DE ATRIBUTOS PARA LA TABLA ASOCIATIVA INTERMEDIA:
         connections: updatedConnections,
         changesSummary: `Digitalización visual completada: ${updatedNodes.length} clases y ${updatedConnections.length} relaciones extraídas.`,
         providerUsed: 'vertex',
-        modelUsed: 'gemini-2.5-flash',
+        modelUsed: 'gemini-3.6-flash',
       };
     } catch (err: any) {
       this.logger.error(`Error procesando visión de diagrama IA: ${err.message || err}`);
@@ -625,7 +625,7 @@ REGLA ESTRICTA DE ATRIBUTOS PARA LA TABLA ASOCIATIVA INTERMEDIA:
         connections: currentConnections,
         changesSummary: 'Fallo al procesar imagen con Gemini Vision.',
         providerUsed: 'vertex',
-        modelUsed: 'gemini-2.5-flash',
+        modelUsed: 'gemini-3.6-flash',
       };
     }
   }
