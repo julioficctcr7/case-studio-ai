@@ -39,6 +39,9 @@ services:
       DB_SYNCHRONIZE: "true"
       JWT_SECRET: ${JWT_SECRET:-super_secret_case_studio_jwt_token_key_2026}
       CORS_ORIGINS: "*"
+      AI_PROVIDER: ${AI_PROVIDER:-vertex}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.6-flash}
       OLLAMA_BASE_URL: http://ollama:11434
       # Fallback Spring datasource properties
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-casestudio}
