@@ -1263,22 +1263,74 @@ export class DiagramEditorComponent implements OnInit, OnDestroy {
     }
   }
 
-  downloadXmiFile(): void {
+  async downloadXmiFile(): Promise<void> {
     const diagId = this.currentDiagramId();
-    if (diagId) {
-      this.xmiService.exportDiagram(diagId).subscribe({
-        next: (blob: Blob) => {
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${this.currentDiagramName().toLowerCase().replace(/\s+/g, '_')}_ea.xmi`;
-          a.click();
-          window.URL.revokeObjectURL(url);
-        },
-      });
-    } else {
+    if (!diagId) {
       alert('Debes guardar el diagrama antes de exportar XMI.');
+      return;
     }
+
+    this.xmiService.exportDiagramXml(diagId).subscribe({
+      next: async (xmiContent: string) => {
+        const rawName = this.currentDiagramName() || 'sistema_ventas';
+        const cleanName = rawName
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9_-]/g, '_')
+          .replace(/_+/g, '_');
+        const filename = `${cleanName}_ea.xmi`;
+
+        // 1. Intentar con File System Access API nativo (Abre el diálogo 'Guardar como' en Windows)
+        if ('showSaveFilePicker' in window) {
+          try {
+            const handle = await (window as any).showSaveFilePicker({
+              suggestedName: filename,
+              types: [
+                {
+                  description: 'Enterprise Architect XMI (*.xmi)',
+                  accept: {
+                    'application/vnd.sparx.xmi': ['.xmi'],
+                    'application/xml': ['.xmi', '.xml'],
+                    'text/xml': ['.xmi', '.xml'],
+                  },
+                },
+              ],
+            });
+            const writable = await handle.createWritable();
+            await writable.write(xmiContent);
+            await writable.close();
+            return;
+          } catch (err: any) {
+            if (err.name === 'AbortError') {
+              return; // Usuario canceló el diálogo
+            }
+            console.warn('showSaveFilePicker fallo, usando descarga alternativa', err);
+          }
+        }
+
+        // 2. Fallback infalible mediante Data URI
+        const blob = new Blob([xmiContent], { type: 'application/vnd.sparx.xmi;charset=utf-8' });
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = dataUrl;
+          a.setAttribute('download', filename);
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+          }, 1000);
+        };
+        reader.readAsDataURL(blob);
+      },
+      error: (err) => {
+        console.error('Error al exportar XMI:', err);
+        alert('Error al descargar el archivo XMI');
+      },
+    });
   }
 
   downloadJsonFile(): void {
@@ -1291,13 +1343,27 @@ export class DiagramEditorComponent implements OnInit, OnDestroy {
       connections: this.connections(),
     };
 
-    const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
+    const rawName = this.currentDiagramName() || 'diagrama';
+    const cleanName = rawName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9_-]/g, '_')
+      .replace(/_+/g, '_');
+    const finalFilename = `${cleanName}_ast.json`;
+
+    const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json;charset=utf-8' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
+    a.style.display = 'none';
     a.href = url;
-    a.download = `${this.currentDiagramName().toLowerCase().replace(/\s+/g, '_')}_ast.json`;
+    a.setAttribute('download', finalFilename);
+    document.body.appendChild(a);
     a.click();
-    window.URL.revokeObjectURL(url);
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 1000);
   }
 
   openExportModal(): void {

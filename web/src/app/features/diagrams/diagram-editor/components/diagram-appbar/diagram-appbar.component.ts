@@ -33,6 +33,7 @@ import { ThemeToggleComponent } from '../../../../../core/components/theme-toggl
 
 @Component({
   selector: 'app-diagram-appbar',
+  host: { class: 'relative z-50 block shrink-0' },
   standalone: true,
   imports: [CommonModule, RouterLink, NgIconComponent, TranslatePipe, LanguageSelectorComponent, ThemeToggleComponent],
   providers: [

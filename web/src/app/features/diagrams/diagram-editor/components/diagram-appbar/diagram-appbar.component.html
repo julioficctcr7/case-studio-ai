@@ -95,7 +95,7 @@
         </button>
 
         @if (isExportDropdownOpen()) {
-          <div class="absolute right-0 mt-1 w-56 bg-white dark:bg-[#14182E] border border-slate-300 dark:border-[#2D3762] shadow-xl rounded-md py-1 z-50 text-xs text-slate-800 dark:text-slate-200 animate-in fade-in zoom-in-95 duration-100 divide-y divide-slate-100 dark:divide-[#283256]">
+          <div class="absolute right-0 mt-1 w-72 bg-white dark:bg-[#14182E] border border-slate-300 dark:border-[#2D3762] shadow-2xl rounded-lg py-1.5 z-[9999] text-xs text-slate-800 dark:text-slate-200 animate-in fade-in zoom-in-95 duration-100 divide-y divide-slate-100 dark:divide-[#283256]">
             <div class="py-0.5">
               <button
                 (click)="exportBmp.emit(); isExportDropdownOpen.set(false)"
@@ -139,7 +139,7 @@
         </button>
 
         @if (isImportDropdownOpen()) {
-          <div class="absolute right-0 mt-1 w-56 bg-white dark:bg-[#14182E] border border-slate-300 dark:border-[#2D3762] shadow-xl rounded-md py-1 z-50 text-xs text-slate-800 dark:text-slate-200 animate-in fade-in zoom-in-95 duration-100">
+          <div class="absolute right-0 mt-1 w-72 bg-white dark:bg-[#14182E] border border-slate-300 dark:border-[#2D3762] shadow-2xl rounded-lg py-1.5 z-[9999] text-xs text-slate-800 dark:text-slate-200 animate-in fade-in zoom-in-95 duration-100">
             <button
               (click)="triggerFileInput()"
               class="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-[#1E2442] flex items-center gap-2 cursor-pointer font-medium text-amber-700 dark:text-amber-400">

@@ -14,7 +14,13 @@ export class XmiService {
   /**
    * Exporta un diagrama existente a XMI 2.1 estándar compatible con Enterprise Architect v17.
    */
-  exportDiagram(diagramId: string): Observable<Blob> {
+  exportDiagramXml(diagramId: string): Observable<string> {
+    return this.http.get(`${this.apiUrl}/export/${diagramId}`, {
+      responseType: 'text',
+    });
+  }
+
+    exportDiagram(diagramId: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/export/${diagramId}`, {
       responseType: 'blob',
     });

@@ -15,6 +15,7 @@ import {
   CodeGenerationPreviewResponseDto,
   GeneratedFileDto,
 } from '../dtos/code-generation-preview-response.dto';
+import { renderPostmanCollection } from '../templates/postman-collection.template';
 
 @Injectable()
 export class CodeGeneratorService {
@@ -95,6 +96,15 @@ export class CodeGeneratorService {
     );
     combinedFiles.push(...flutterFiles);
 
+    // Colección Postman v2.1 con CRUD completo (Create, Read, Update, Delete)
+    combinedFiles.push({
+      path: 'postman_collection.json',
+      filename: 'postman_collection.json',
+      language: 'json',
+      layer: 'docs',
+      content: renderPostmanCollection(context),
+    });
+
     // README Maestro del Proyecto Fullstack
     const masterReadme = `# 🌟 ${context.projectName} (Fullstack Solution)
 
@@ -139,6 +149,15 @@ flutter run
     });
 
     combinedFiles.push(...flutterFiles);
+
+    // Colección Postman v2.1 con CRUD completo (Create, Read, Update, Delete)
+    combinedFiles.push({
+      path: 'postman_collection.json',
+      filename: 'postman_collection.json',
+      language: 'json',
+      layer: 'docs',
+      content: renderPostmanCollection(context),
+    });
 
     // Script individual de inicio de Backend
     combinedFiles.push({
@@ -194,14 +213,33 @@ echo =========================================================================
 echo   CASE STUDIO AI - LANZADOR FULLSTACK AUTONOMO DE 1 CLIC (DEFENSA RAPIDA)
 echo =========================================================================
 echo.
-echo [1/3] Iniciando Backend Spring Boot y Base de Datos en Docker...
-cd backend
-start /b docker compose up -d
-cd ..
-echo Esperando 6 segundos a que el contenedor de Spring Boot inicie...
-timeout /t 6 /nobreak > nul
+echo [1/3] Verificando e iniciando Backend Spring Boot y Base de Datos...
+docker info >nul 2>&1
+if %errorlevel% equ 0 (
+    echo [OK] Docker Desktop detectado activo. Levantando contenedores...
+    cd backend
+    start "Backend Docker" cmd /c "docker compose up -d && exit"
+    cd ..
+) else (
+    echo [!] Docker Desktop no detectado en ejecucion.
+    echo Iniciando Backend Spring Boot localmente con Java y Gradle Wrapper...
+    cd backend
+    start "Backend Spring Boot" cmd /k "gradlew.bat bootRun"
+    cd ..
+)
+
 echo.
-echo [2/3] Abriendo Documentacion Swagger UI en el navegador...
+echo Esperando a que el backend Spring Boot este listo en el puerto ${context.serverPort || 8080}...
+:wait_backend
+timeout /t 3 /nobreak > nul
+powershell -Command "(Test-NetConnection -ComputerName localhost -Port ${context.serverPort || 8080}).TcpTestSucceeded" 2>nul | findstr /i "True" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Aguardando inicio del servicio en puerto ${context.serverPort || 8080}...
+    goto wait_backend
+)
+echo [OK] Backend Spring Boot activo y respondiendo exitosamente.
+echo.
+echo [2/3] Abriendo Documentacion Interactiva Swagger UI...
 start http://localhost:${context.serverPort || 8080}/swagger-ui.html
 echo.
 echo [3/3] Iniciando Aplicacion Movil Flutter en Navegador Chrome...

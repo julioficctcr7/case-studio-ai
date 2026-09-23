@@ -1,7 +1,7 @@
 <div class="h-screen w-screen flex flex-col bg-[#F9F7F5] dark:bg-[#0D1124] select-none overflow-hidden font-sans transition-colors duration-200">
 
   <!-- 1. [TOPBAR] REFACTORIZADO EN COMPONENTE SEPARADO -->
-  <app-diagram-appbar
+  <app-diagram-appbar class="relative z-50 block shrink-0"
     [diagramTitle]="currentDiagramName()"
     [diagramId]="currentDiagramId()"
     [isSaving]="diagramService.isSaving()"
