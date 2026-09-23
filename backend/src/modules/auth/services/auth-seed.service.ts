@@ -14,13 +14,13 @@ export class AuthSeedService implements OnApplicationBootstrap {
 
   private async seedDefaultUser() {
     try {
-      const testEmail = 'evert@uagrm.edu.bo';
+      const testEmail = 'cesar@uagrm.edu.bo';
       const existing = await this.userRepository.findByEmail(testEmail);
 
       if (!existing) {
         const passwordHash = await bcrypt.hash('Pass1234!', 10);
         await this.userRepository.createAndSave({
-          fullName: 'Evert Rodriguez',
+          fullName: 'Cesar Quispe Delgado',
           email: testEmail,
           passwordHash,
           isActive: true,

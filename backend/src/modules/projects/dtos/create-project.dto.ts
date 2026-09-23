@@ -13,11 +13,11 @@ export class CreateProjectDto {
   @IsString({ message: 'La descripción debe ser una cadena de texto' })
   description?: string;
 
-  @ApiPropertyOptional({ example: 'com.uagrm.facturacion', default: 'com.example.app' })
+  @ApiPropertyOptional({ example: 'com.uagrm.facturacion', default: 'com.casestudio' })
   @IsOptional()
   @IsString({ message: 'El paquete base debe ser una cadena de texto válida' })
   @MaxLength(150)
-  basePackage?: string = 'com.example.app';
+  basePackage?: string = 'com.casestudio';
 
   @ApiPropertyOptional({ example: 21, default: 21 })
   @IsOptional()

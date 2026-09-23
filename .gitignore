@@ -28,3 +28,6 @@ mobile/.flutter-plugins-dependencies
 # Docker Volumes
 pgdata/
 ollama_data/
+
+test_generated/
+
